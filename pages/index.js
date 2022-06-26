@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import Head from "next/head";
-import Image from "next/image";
 
 import tw from "tailwind-styled-components";
 import Map from "./components/Map";
