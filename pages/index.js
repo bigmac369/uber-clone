@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 
@@ -6,21 +6,43 @@ import tw from "tailwind-styled-components";
 import Map from "./components/Map";
 
 import Link from "next/link";
+import { auth } from "../firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useRouter } from "next/router";
 
 export default function Home() {
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    //dont have to do the unsubscribe and return unsubscribe using the below return
+    return onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser({
+          name: user.displayName,
+          photoUrl: user.photoURL,
+        });
+      } else {
+        setUser(null);
+        router.push("/login");
+      }
+    });
+  }, []);
   return (
     <Wrapper>
       <Map />
       <ActionItems>
-        {/* Header */}
         <Header>
           <UberLogo src="https://i.ibb.co/84stgjq/uber-technologies-new-20218114.jpg" />
           <Profile>
-            <Name>Eric Chua</Name>
-            <UserImage src="https://lh3.googleusercontent.com/L3hckJ5Jp5QO0ITgVWJBU9phVTC4ViLuhsDwmWfI-o-Ifnqd14dM7_G5K16iOXSFUYWG4Q=s85" />
+            <Name>{user && user.name}</Name>
+            <UserImage
+              src={user && user.photoUrl}
+              onClick={() => signOut(auth)}
+            />
           </Profile>
         </Header>
-        {/* ActionButtons */}
+
         <ActionButtons>
           <Link href="/search">
             <ActionButton>
@@ -37,7 +59,7 @@ export default function Home() {
             Reserve
           </ActionButton>
         </ActionButtons>
-        {/* InputButton */}
+
         <InputButton>Where to?</InputButton>
       </ActionItems>
     </Wrapper>
@@ -70,7 +92,7 @@ const Name = tw.div`
 `;
 
 const UserImage = tw.img`
-  h-12 w-12 rounded-full border border-gray-200 p-px
+  h-12 w-12 rounded-full border border-gray-200 p-px cursor-pointer
 `;
 
 const ActionButtons = tw.div`
